@@ -43,6 +43,10 @@ if __name__ == '__main__':
 
   parser.set_defaults(force=False)
 
+  if len(sys.argv) == 1:
+    parser.print_help()
+    sys.exit(0)
+
   args = parser.parse_args()
 
   ark(args.dir, args.force, args.modbefore)
