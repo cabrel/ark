@@ -4,31 +4,44 @@ from os.path import join, getsize
 def ark(rootDir, force=False, modbefore=None):
   toDelete = []
 
-  with zipfile.ZipFile('ark.zip', 'w', allowZip64=True) as z:
+  zipname = 'ark.zip'
+  origmodbefore = ''
+
+  # convert modbefore
+  if modbefore is not None:
+    origmodbefore = modbefore
+    modbefore = time.strptime(modbefore, '%Y-%m-%d')
+    zipname = 'before-%s-ark.zip' % (origmodbefore)
+
+  with zipfile.ZipFile(zipname, 'w', allowZip64=True) as z:
     for root, dirs, files in os.walk(rootDir):
       for f in files:
         x = '%s%s%s' % (root, os.sep, f)
-        z.write(x)
+        modtime = time.localtime(os.path.getmtime(x))
 
-        modtime = os.path.getmtime(x)
-
-        # add the file to the deletion
-        # array
-        if force is True:
-          toDelete.append(x)
-
-        # compare given time with file time
         if modbefore is not None:
-          modbefore = datetime.strptime(modbefore, '%Y-%m-%d')
-          print modbefore
+          # add the file to the deletion array
+          toDelete.append(x)
+          if modtime < modbefore:
+            z.write(x)
 
+        else:
+          z.write(x)
+
+  # remove files
+  if force == True:
+    for f in toDelete:
+      print 'Deleting: %s' % (f)
+      os.remove(f)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
 
-  parser.add_argument('--force', type=bool, default=False, help='Force delete files after adding them to the archive')
+  parser.add_argument('--force', dest='force', action='store_true', help='Delete files from disk that have been added to the archive')
   parser.add_argument('--modbefore', type=str, default=None, help='Set modified before date to limit the scope of the archive. YYYY-MM-DD')
   parser.add_argument('--dir', type=str, help='Root directory to search from')
+
+  parser.set_defaults(force=False)
 
   args = parser.parse_args()
 
