@@ -63,6 +63,7 @@ def ark(rootDir, forceDelete=False, acceptrisk=False, shallow=False, modbefore=N
   if shallow == True:
     dirs = []
 
+    # iterate over each first-level directory and archive those individually
     for d in os.listdir(rootDir):
       x = '%s%s%s' % (rootDir, os.sep, d)
       if os.path.isdir(x):
@@ -80,6 +81,8 @@ def ark(rootDir, forceDelete=False, acceptrisk=False, shallow=False, modbefore=N
     for f in filesToDelete:
       os.remove(f)
 
+    # acceptrisk allows directories to be deleted however, if modbefore
+    # is set then a directory will never be deleted
     if modbefore is None and acceptrisk == True:
       print 'Deleting %s directories' % (len(dirsToDelete))
       for d in dirsToDelete:
